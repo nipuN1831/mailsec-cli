@@ -9,11 +9,17 @@ import (
 	"github.com/nipun/mailsec/internal/checker"
 )
 
+// errIndent aligns the cause line under the Detail column of the check line.
+const errIndent = 20
+
 func Print(w io.Writer, domain string, results []checker.Result) {
 	fmt.Fprintf(w, "\nDomain: %s\n\n", domain)
 	for _, r := range results {
 		icon := statusIcon(r.Status)
 		fmt.Fprintf(w, "%-6s %s %-10s %s\n", r.Name, icon, r.Status, r.Detail)
+		if r.Err != nil {
+			fmt.Fprintf(w, "%*scause: %v\n", errIndent, "", r.Err)
+		}
 	}
 	fmt.Fprintf(w, "\nVerdict: %s\n", verdict(results))
 }
@@ -22,6 +28,7 @@ func PrintJSON(w io.Writer, domain string, results []checker.Result) error {
 	type entry struct {
 		Status string `json:"status"`
 		Detail string `json:"detail"`
+		Error  string `json:"error,omitempty"`
 	}
 	out := struct {
 		Domain  string           `json:"domain"`
@@ -33,10 +40,14 @@ func PrintJSON(w io.Writer, domain string, results []checker.Result) error {
 		Verdict: string(verdictStatus(results)),
 	}
 	for _, r := range results {
-		out.Checks[strings.ToLower(r.Name)] = entry{
+		e := entry{
 			Status: string(r.Status),
 			Detail: r.Detail,
 		}
+		if r.Err != nil {
+			e.Error = r.Err.Error()
+		}
+		out.Checks[strings.ToLower(r.Name)] = e
 	}
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
@@ -69,25 +80,30 @@ func verdict(results []checker.Result) string {
 	}
 }
 
+// verdictStatus reduces the per-check statuses to one overall verdict. A single
+// missing record is enough to withhold a passing verdict: a domain with SPF but
+// no DMARC is exactly the gap this tool exists to surface.
 func verdictStatus(results []checker.Result) checker.Status {
-	hasWarning := false
 	allNone := true
+	allPass := true
 	for _, r := range results {
 		if r.Status == checker.StatusFail {
 			return checker.StatusFail
 		}
-		if r.Status == checker.StatusWarning {
-			hasWarning = true
-		}
 		if r.Status != checker.StatusNone {
 			allNone = false
 		}
+		if r.Status != checker.StatusPass {
+			allPass = false
+		}
 	}
-	if allNone {
+
+	switch {
+	case allNone:
 		return checker.StatusNone
-	}
-	if hasWarning {
+	case allPass:
+		return checker.StatusPass
+	default:
 		return checker.StatusWarning
 	}
-	return checker.StatusPass
 }
