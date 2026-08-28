@@ -21,6 +21,21 @@ func main() {
 	}
 }
 
+// isTerminal reports whether r is an interactive terminal, in which case
+// reading it would block forever waiting for input nobody is going to type.
+// Test doubles are not *os.File and correctly fall through to reading.
+func isTerminal(r io.Reader) bool {
+	f, ok := r.(*os.File)
+	if !ok {
+		return false
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return stat.Mode()&os.ModeCharDevice != 0
+}
+
 func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	flags := flag.NewFlagSet("mailsec", flag.ContinueOnError)
 	domain := flags.String("domain", "", "domain to check (e.g. example.com)")
@@ -37,6 +52,10 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	resolvedSelector := *selector
 
 	if resolvedDomain == "" {
+		if isTerminal(stdin) {
+			return fmt.Errorf("provide --domain or pipe raw email headers via stdin")
+		}
+
 		raw, err := io.ReadAll(stdin)
 		if err != nil {
 			return fmt.Errorf("reading stdin: %w", err)
