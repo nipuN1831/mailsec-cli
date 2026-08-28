@@ -1,6 +1,10 @@
 package checker
 
-import "context"
+import (
+	"context"
+	"errors"
+	"net"
+)
 
 type Status string
 
@@ -20,6 +24,18 @@ type Result struct {
 
 type Checker interface {
 	Check(ctx context.Context, domain string) Result
+}
+
+// lookupFunc matches net.Resolver.LookupTXT so tests can substitute canned
+// DNS responses without reaching the network.
+type lookupFunc func(ctx context.Context, name string) ([]string, error)
+
+// isDNSNotFound separates an authoritative "this name does not exist" from a
+// transient resolver failure, so the report never claims a record is absent
+// when the lookup simply did not complete.
+func isDNSNotFound(err error) bool {
+	var dnsErr *net.DNSError
+	return errors.As(err, &dnsErr) && dnsErr.IsNotFound
 }
 
 // RunAll runs all checkers concurrently and returns results in order.

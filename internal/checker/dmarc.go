@@ -9,21 +9,25 @@ import (
 )
 
 type DMARCChecker struct {
-	resolver *net.Resolver
+	lookupTXT lookupFunc
 }
 
 func NewDMARCChecker() *DMARCChecker {
-	return &DMARCChecker{resolver: net.DefaultResolver}
+	return &DMARCChecker{lookupTXT: net.DefaultResolver.LookupTXT}
 }
 
 func (d *DMARCChecker) Check(ctx context.Context, domain string) Result {
 	host := "_dmarc." + domain
-	records, err := d.resolver.LookupTXT(ctx, host)
+	records, err := d.lookupTXT(ctx, host)
 	if err != nil {
+		detail := "DNS lookup failed"
+		if isDNSNotFound(err) {
+			detail = "no DMARC record found"
+		}
 		return Result{
 			Name:   "DMARC",
 			Status: StatusNone,
-			Detail: "no DMARC record found",
+			Detail: detail,
 			Err:    fmt.Errorf("dmarc: lookup %s: %w", host, err),
 		}
 	}
