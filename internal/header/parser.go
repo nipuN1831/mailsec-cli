@@ -31,11 +31,27 @@ func ParseDomain(raw string) (string, error) {
 	return parts[1], nil
 }
 
+// unfoldHeaders joins RFC 5322 folded header lines (continuations starting with space/tab).
+func unfoldHeaders(raw string) string {
+	// Replace CRLF+space or CRLF+tab or LF+space or LF+tab with a single space
+	unfolded := strings.ReplaceAll(raw, "\r\n ", " ")
+	unfolded = strings.ReplaceAll(unfolded, "\r\n\t", " ")
+	unfolded = strings.ReplaceAll(unfolded, "\n ", " ")
+	unfolded = strings.ReplaceAll(unfolded, "\n\t", " ")
+	return unfolded
+}
+
 // ParseDKIMSelector extracts the selector from a DKIM-Signature header.
 // Returns "default" if not found.
 func ParseDKIMSelector(raw string) string {
-	for _, line := range strings.Split(raw, "\n") {
-		if !strings.HasPrefix(line, "DKIM-Signature:") {
+	unfolded := unfoldHeaders(raw)
+	for _, line := range strings.Split(unfolded, "\n") {
+		// Case-insensitive header name match
+		if len(line) < 16 {
+			continue
+		}
+		headerName := line[:15] // "DKIM-Signature:"
+		if !strings.EqualFold(headerName, "DKIM-Signature:") {
 			continue
 		}
 		for _, part := range strings.Split(line, ";") {

@@ -51,3 +51,21 @@ func TestParseDKIMSelector_not_found(t *testing.T) {
 		t.Errorf("want default, got %s", sel)
 	}
 }
+
+func TestParseDKIMSelector_folded_header(t *testing.T) {
+	// RFC 5322 folded header: s= tag on continuation line
+	raw := "DKIM-Signature: v=1; a=rsa-sha256;\r\n s=google; d=gmail.com;\r\n"
+	sel := header.ParseDKIMSelector(raw)
+	if sel != "google" {
+		t.Errorf("want google, got %s", sel)
+	}
+}
+
+func TestParseDKIMSelector_mixed_case_header(t *testing.T) {
+	// Header name should be case-insensitive
+	raw := "Dkim-Signature: v=1; a=rsa-sha256; s=example; d=example.com;\r\n"
+	sel := header.ParseDKIMSelector(raw)
+	if sel != "example" {
+		t.Errorf("want example, got %s", sel)
+	}
+}
