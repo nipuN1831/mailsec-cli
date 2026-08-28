@@ -3,6 +3,7 @@ package checker
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -24,10 +25,15 @@ func (d *DKIMChecker) Check(ctx context.Context, domain string) Result {
 	host := fmt.Sprintf("%s._domainkey.%s", d.Selector, domain)
 	records, err := d.resolver.LookupTXT(ctx, host)
 	if err != nil {
+		detail := "DNS lookup failed"
+		var dnsErr *net.DNSError
+		if errors.As(err, &dnsErr) && dnsErr.IsNotFound {
+			detail = fmt.Sprintf("no DKIM record for selector=%s", d.Selector)
+		}
 		return Result{
 			Name:   "DKIM",
 			Status: StatusNone,
-			Detail: fmt.Sprintf("no DKIM record for selector=%s", d.Selector),
+			Detail: detail,
 			Err:    fmt.Errorf("dkim: lookup %s: %w", host, err),
 		}
 	}
@@ -60,7 +66,8 @@ func isKeyRevoked(record string) bool {
 
 func dkimDetail(record, selector string) string {
 	keyBits := estimateKeyBits(record)
-	return fmt.Sprintf("selector=%s key≈%d-bit RSA", selector, keyBits)
+	keyType := parseKeyType(record)
+	return fmt.Sprintf("selector=%s key≈%d-bit %s", selector, keyBits, keyType)
 }
 
 func estimateKeyBits(record string) int {
@@ -76,4 +83,15 @@ func estimateKeyBits(record string) int {
 		}
 	}
 	return 0
+}
+
+func parseKeyType(record string) string {
+	for _, part := range strings.Split(record, ";") {
+		part = strings.TrimSpace(part)
+		if strings.HasPrefix(part, "k=") {
+			kType := strings.TrimPrefix(part, "k=")
+			return strings.ToUpper(kType)
+		}
+	}
+	return "RSA"
 }
