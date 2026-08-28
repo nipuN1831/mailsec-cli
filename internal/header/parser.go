@@ -31,10 +31,26 @@ func ParseDomain(raw string) (string, error) {
 	return parts[1], nil
 }
 
+// extractHeaderBlock returns the email header block (stops at blank line separating headers from body).
+func extractHeaderBlock(raw string) string {
+	// Look for blank line: \r\n\r\n first (CRLF style)
+	if idx := strings.Index(raw, "\r\n\r\n"); idx >= 0 {
+		return raw[:idx]
+	}
+	// Fall back to \n\n (LF style)
+	if idx := strings.Index(raw, "\n\n"); idx >= 0 {
+		return raw[:idx]
+	}
+	// No blank line found, treat entire input as headers
+	return raw
+}
+
 // unfoldHeaders joins RFC 5322 folded header lines (continuations starting with space/tab).
+// Only operates on the header block; respects the header/body boundary.
 func unfoldHeaders(raw string) string {
+	headers := extractHeaderBlock(raw)
 	// Replace CRLF+space or CRLF+tab or LF+space or LF+tab with a single space
-	unfolded := strings.ReplaceAll(raw, "\r\n ", " ")
+	unfolded := strings.ReplaceAll(headers, "\r\n ", " ")
 	unfolded = strings.ReplaceAll(unfolded, "\r\n\t", " ")
 	unfolded = strings.ReplaceAll(unfolded, "\n ", " ")
 	unfolded = strings.ReplaceAll(unfolded, "\n\t", " ")

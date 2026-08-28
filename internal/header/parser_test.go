@@ -69,3 +69,13 @@ func TestParseDKIMSelector_mixed_case_header(t *testing.T) {
 		t.Errorf("want example, got %s", sel)
 	}
 }
+
+func TestParseDKIMSelector_body_injection_prevented(t *testing.T) {
+	// Regression: body starting with space should not be spliced into headers.
+	// DKIM-Signature with no s= tag, blank line, body with " s=attackercontrolled".
+	raw := "DKIM-Signature: v=1; a=rsa-sha256; d=example.com;\r\n\r\n s=attackercontrolled; more text\r\n"
+	sel := header.ParseDKIMSelector(raw)
+	if sel != "default" {
+		t.Errorf("want default (body should not be parsed), got %s", sel)
+	}
+}
