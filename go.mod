@@ -1,3 +1,3 @@
-module github.com/nipun/mailsec
+module github.com/nipuN1831/mailsec
 
 go 1.22

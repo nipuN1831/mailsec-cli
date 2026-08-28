@@ -3,7 +3,7 @@ package header_test
 import (
 	"testing"
 
-	"github.com/nipun/mailsec/internal/header"
+	"github.com/nipuN1831/mailsec/internal/header"
 )
 
 func TestParseDomain_standard_from(t *testing.T) {

@@ -2,7 +2,7 @@ package checker_test
 
 import (
 	"context"
-	"github.com/nipun/mailsec/internal/checker"
+	"github.com/nipuN1831/mailsec/internal/checker"
 	"testing"
 )
 
