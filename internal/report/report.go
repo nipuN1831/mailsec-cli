@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/nipuN1831/mailsec/internal/checker"
+	"github.com/nipuN1831/mailsec-cli/internal/checker"
 )
 
 // errIndent aligns the cause line under the Detail column of the check line.

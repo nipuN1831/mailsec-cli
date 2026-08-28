@@ -3,7 +3,7 @@ package report
 import (
 	"testing"
 
-	"github.com/nipuN1831/mailsec/internal/checker"
+	"github.com/nipuN1831/mailsec-cli/internal/checker"
 )
 
 func TestVerdictStatus(t *testing.T) {

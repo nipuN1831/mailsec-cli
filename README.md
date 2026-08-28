@@ -13,8 +13,8 @@ SPF, DKIM, and DMARC are three separate, easy-to-misconfigure DNS records that t
 Requires Go 1.22+.
 
 ```bash
-git clone https://github.com/nipuN1831/mailsec.git
-cd mailsec
+git clone https://github.com/nipuN1831/mailsec-cli.git
+cd mailsec-cli
 go build ./cmd/mailsec
 ```
 

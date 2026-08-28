@@ -9,9 +9,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/nipuN1831/mailsec/internal/checker"
-	"github.com/nipuN1831/mailsec/internal/header"
-	"github.com/nipuN1831/mailsec/internal/report"
+	"github.com/nipuN1831/mailsec-cli/internal/checker"
+	"github.com/nipuN1831/mailsec-cli/internal/header"
+	"github.com/nipuN1831/mailsec-cli/internal/report"
 )
 
 func main() {

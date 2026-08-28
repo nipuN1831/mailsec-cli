@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nipuN1831/mailsec/internal/checker"
-	"github.com/nipuN1831/mailsec/internal/report"
+	"github.com/nipuN1831/mailsec-cli/internal/checker"
+	"github.com/nipuN1831/mailsec-cli/internal/report"
 )
 
 func TestPrint_contains_domain(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nipuN1831/mailsec/internal/checker"
+	"github.com/nipuN1831/mailsec-cli/internal/checker"
 )
 
 func TestDMARCChecker_real_domain(t *testing.T) {
