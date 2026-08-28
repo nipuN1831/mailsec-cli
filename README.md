@@ -87,6 +87,26 @@ SPF    ? none       DNS lookup failed
                     cause: spf: lookup example.com: read udp ...: i/o timeout
 ```
 
+## Try it yourself
+
+```bash
+go build -o mailsec ./cmd/mailsec
+
+# a domain you know
+./mailsec --domain your-company.com
+
+# a real email: in Gmail, open a message → ⋮ → "Show original" → save the
+# raw text to a file, then:
+./mailsec < that-email.eml
+
+# edge cases
+./mailsec --domain a-domain-with-no-dns-records-at-all.example   # StatusNone on every check
+./mailsec --domain google.com --timeout 1ms                       # forces a DNS timeout, shows the "cause:" line
+./mailsec                                                          # no --domain, no piped input: errors immediately, never hangs
+```
+
+Rebuild with the same `go build -o mailsec ./cmd/mailsec` command after any code change.
+
 ## Architecture
 
 ```
