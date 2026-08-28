@@ -29,7 +29,7 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	timeout := flags.Duration("timeout", 5*time.Second, "DNS lookup timeout")
 
 	if err := flags.Parse(args); err != nil {
-		return err
+		return fmt.Errorf("parsing flags: %w", err)
 	}
 
 	// Determine domain and selector from flags or stdin headers
