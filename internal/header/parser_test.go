@@ -79,3 +79,25 @@ func TestParseDKIMSelector_body_injection_prevented(t *testing.T) {
 		t.Errorf("want default (body should not be parsed), got %s", sel)
 	}
 }
+
+func TestParseDKIMSelector_lf_only_boundary_with_crlf_in_body(t *testing.T) {
+	// Regression: pattern-ordering bug. LF-only message with "\n\n" boundary,
+	// but body later contains "\r\n\r\n" followed by "s=evilselector".
+	// Old code would find the body's "\r\n\r\n" and treat everything up to it as headers.
+	raw := "DKIM-Signature: v=1; a=rsa-sha256; s=legit; d=example.com;\n\nQuoted text:\n\r\n\r\n s=evilselector\n"
+	sel := header.ParseDKIMSelector(raw)
+	if sel != "legit" {
+		t.Errorf("want legit (from real header), got %s", sel)
+	}
+}
+
+func TestParseDKIMSelector_mixed_eol_boundary(t *testing.T) {
+	// Regression: mixed-EOL bug. Header ends with bare \n, blank line is \r\n.
+	// Boundary is "\n\r\n" which matches neither "\r\n\r\n" nor "\n\n".
+	// Old code would treat entire input as headers.
+	raw := "DKIM-Signature: v=1; a=rsa-sha256; d=example.com;\n\r\n s=attackercontrolled\r\n"
+	sel := header.ParseDKIMSelector(raw)
+	if sel != "default" {
+		t.Errorf("want default (body should not be parsed), got %s", sel)
+	}
+}

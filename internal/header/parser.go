@@ -32,27 +32,27 @@ func ParseDomain(raw string) (string, error) {
 }
 
 // extractHeaderBlock returns the email header block (stops at blank line separating headers from body).
+// Normalizes line endings first to handle mixed EOL variants robustly.
 func extractHeaderBlock(raw string) string {
-	// Look for blank line: \r\n\r\n first (CRLF style)
-	if idx := strings.Index(raw, "\r\n\r\n"); idx >= 0 {
-		return raw[:idx]
+	// Normalize all line endings to LF to handle mixed EOL patterns uniformly.
+	// This also ensures extracting the earliest blank-line boundary correctly.
+	normalized := strings.ReplaceAll(raw, "\r\n", "\n")
+
+	// Find the header/body boundary (blank line = "\n\n")
+	if idx := strings.Index(normalized, "\n\n"); idx >= 0 {
+		return normalized[:idx]
 	}
-	// Fall back to \n\n (LF style)
-	if idx := strings.Index(raw, "\n\n"); idx >= 0 {
-		return raw[:idx]
-	}
+
 	// No blank line found, treat entire input as headers
-	return raw
+	return normalized
 }
 
 // unfoldHeaders joins RFC 5322 folded header lines (continuations starting with space/tab).
 // Only operates on the header block; respects the header/body boundary.
 func unfoldHeaders(raw string) string {
 	headers := extractHeaderBlock(raw)
-	// Replace CRLF+space or CRLF+tab or LF+space or LF+tab with a single space
-	unfolded := strings.ReplaceAll(headers, "\r\n ", " ")
-	unfolded = strings.ReplaceAll(unfolded, "\r\n\t", " ")
-	unfolded = strings.ReplaceAll(unfolded, "\n ", " ")
+	// Headers are already normalized to LF, so only need to handle "\n " and "\n\t"
+	unfolded := strings.ReplaceAll(headers, "\n ", " ")
 	unfolded = strings.ReplaceAll(unfolded, "\n\t", " ")
 	return unfolded
 }
