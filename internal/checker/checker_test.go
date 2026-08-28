@@ -2,9 +2,9 @@ package checker_test
 
 import (
 	"context"
+	"github.com/nipun/mailsec/internal/checker"
 	"testing"
 	"time"
-	"github.com/nipun/mailsec/internal/checker"
 )
 
 type stubChecker struct {
@@ -17,8 +17,8 @@ func (s stubChecker) Check(_ context.Context, _ string) checker.Result {
 
 func TestRunAll_collects_all_results(t *testing.T) {
 	checkers := []checker.Checker{
-		stubChecker{checker.Result{Name: "spf",   Status: checker.StatusPass}},
-		stubChecker{checker.Result{Name: "dkim",  Status: checker.StatusFail}},
+		stubChecker{checker.Result{Name: "spf", Status: checker.StatusPass}},
+		stubChecker{checker.Result{Name: "dkim", Status: checker.StatusFail}},
 		stubChecker{checker.Result{Name: "dmarc", Status: checker.StatusNone}},
 	}
 

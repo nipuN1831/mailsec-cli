@@ -24,9 +24,9 @@ func PrintJSON(w io.Writer, domain string, results []checker.Result) error {
 		Detail string `json:"detail"`
 	}
 	out := struct {
-		Domain  string            `json:"domain"`
-		Checks  map[string]entry  `json:"checks"`
-		Verdict string            `json:"verdict"`
+		Domain  string           `json:"domain"`
+		Checks  map[string]entry `json:"checks"`
+		Verdict string           `json:"verdict"`
 	}{
 		Domain:  domain,
 		Checks:  make(map[string]entry),

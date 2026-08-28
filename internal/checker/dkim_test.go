@@ -2,8 +2,8 @@ package checker_test
 
 import (
 	"context"
-	"testing"
 	"github.com/nipun/mailsec/internal/checker"
+	"testing"
 )
 
 func TestDKIMChecker_known_selector(t *testing.T) {

@@ -2,8 +2,8 @@ package checker_test
 
 import (
 	"context"
-	"testing"
 	"github.com/nipun/mailsec/internal/checker"
+	"testing"
 )
 
 func TestSPFChecker_real_domain(t *testing.T) {

@@ -50,10 +50,10 @@ func findSPFRecord(records []string) string {
 func spfPolicyStatus(record string) Status {
 	switch {
 	case strings.Contains(record, "-all"):
-		return StatusPass    // strict — rejects unauthorized senders
+		return StatusPass // strict — rejects unauthorized senders
 	case strings.Contains(record, "~all"):
 		return StatusWarning // soft fail — marks but doesn't reject
 	default:
-		return StatusFail    // +all or ?all — allows everything, insecure
+		return StatusFail // +all or ?all — allows everything, insecure
 	}
 }
